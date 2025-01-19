@@ -47,11 +47,19 @@ class Joint:
         if (dir > 0.0):
             if math.fabs(err) < ERR_THRES:
                 return []
-            cmd = self.position + self.plus_delta
+
+            if (math.fabs(err) < self.plus_delta / 2):
+                cmd = self.position + math.fabs(err)
+            else:
+                cmd = self.position + self.plus_delta
         else:
             if math.fabs(err) < ERR_THRES:
                 return []
-            cmd = self.position - self.minus_delta
+
+            if (math.fabs(err) < self.minus_delta / 2):
+                cmd = self.position - math.fabs(err)
+            else:
+                cmd = self.position - self.minus_delta
 
         # cmd = self.position + dir * MIN_DELTA
         print(f"pos: {self.position}, cmd: {cmd}")
@@ -362,7 +370,7 @@ def wait_cmds(duration_s=5):
         time.sleep(0.02)  # Maintain the desired update rate
 
 GRIP_OPEN=130
-GRIP_CLOSE=80
+GRIP_CLOSE=75
 
 def unwind():
     KBot.set_target(KBot.LeftShoulderPitchId, -30)
@@ -375,11 +383,11 @@ def wind():
     KBot.set_target(KBot.LeftHandYawId, 0)
 
 def grip_open():
-    wind()
+    # wind()
     KBot.set_target(KBot.LeftHandGripId, GRIP_OPEN)
 
 def grip_close():
-    wind()
+    # wind()
     KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
 
 
@@ -437,15 +445,21 @@ def grip_close():
 wind()
 wait_cmds(10)
  
+wind()
 grip_open()
 wait_cmds(5)
 
 
+wind()
 grip_close()
 wait_cmds(5)
+# wind()
+# grip_close()
+# wait_cmds(2)
+
 
 unwind()
 wait_cmds(10)
-# 
+
 # for _ in range(500):
 #     KBot.update()
