@@ -11,20 +11,22 @@ ACTUATOR_NAME_TO_ID = {
     "left_elbow_yaw": 23,
     "left_elbow_updown": 24,
     "left_wrist_yaw": 25,
-#     "right_shoulder_yaw": 21,
-#     "right_shoulder_pitch": 22,
-#     "right_elbow_yaw": 23,
+    "right_shoulder_updown": 12,
+    "right_shoulder_lateral":13,
+    "right_elbow_yaw": 14,
+    "right_elbow_updown": 15,
+    "right_wrist_yaw": 16,
 #     "right_gripper": 24,
 #     "left_hip_yaw": 31,
 #     "left_hip_roll": 32,
 #     "left_hip_pitch": 33,
-#     "left_knee_pitch": 34,
-#     "left_ankle_pitch": 35,
+     "left_knee_pitch": 34,
+     "left_ankle_pitch": 35,
 #     "right_hip_yaw": 41,
 #     "right_hip_roll": 42,
 #     "right_hip_pitch": 43,
-#     "right_knee_pitch": 44,
-#     "right_ankle_pitch": 45,
+     "right_knee_pitch": 44,
+     "right_ankle_pitch": 45,
 }
 ACTUATOR_ID_TO_NAME = {v: k for k, v in ACTUATOR_NAME_TO_ID.items()}
 
@@ -43,6 +45,22 @@ joints = {
     "left_shoulder_lateral": {
         "actuator_id": 22,
         "zero_position": -2.6038320064544678
+    },
+
+    "right_shoulder_lateral": {
+        "actuator_id": 13,
+        "zero_position": 1.8402098417282104
+
+    },
+
+    "right_shoulder_updown": {
+        "actuator_id": 12,
+        "zero_position": 0.098901137709617615
+    },
+
+    "left_knee_pitch": {
+        "actuator_id": 34,
+        "zero_position": -0.098901137709617615
     }
 
 }
@@ -87,21 +105,28 @@ while running:
                 print("Up arrow pressed")
                 move_joint("left_shoulder_updown", 1, 1)
                 move_joint("left_elbow_updown", 1)
-
+                move_joint("right_shoulder_updown", 1, 1)
+                move_joint("right_elbow_updown", 1)
+                # move_joint("left_knee_pitch", 1)
+                # move_joint("right_knee_pitch", -1)
 
             elif event.key == pygame.K_DOWN:
                 print("Down arrow pressed")
                 move_joint("left_shoulder_updown", -1, 1)
                 move_joint("left_elbow_updown", -1)
+                move_joint("right_shoulder_updown", -1, 1)
+                move_joint("right_elbow_updown", -1)
+                # move_joint("left_knee_pitch", -1)
+                # move_joint("right_knee_pitch", 1)
 
             elif event.key == pygame.K_LEFT:
                 print("Left arrow pressed")
                 move_joint("left_shoulder_lateral", 1)
-
+                move_joint("right_shoulder_lateral", 1)
             elif event.key == pygame.K_RIGHT:
                 print("Right arrow pressed")
                 move_joint("left_shoulder_lateral", -1)
-
+                move_joint("right_shoulder_lateral", -1)
             elif event.key == pygame.K_ESCAPE:
                 # Optionally press Escape to exit
                 running = False
