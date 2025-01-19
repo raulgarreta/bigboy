@@ -1,0 +1,5 @@
+aiortc
+pykos
+pytest
+setuptools
+colorlogging
