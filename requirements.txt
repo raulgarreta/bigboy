@@ -3,3 +3,6 @@ pykos
 pytest
 setuptools
 colorlogging
+pygame
+speech_recognition
+pyaudio
