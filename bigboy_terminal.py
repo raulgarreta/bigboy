@@ -5,7 +5,7 @@ import time
 import logging
 import math
 
-MIN_DELTA = 0.4
+MIN_DELTA = 0.55
 
 class Joint:
     def __init__(self, actuator_id, zero_position=0.0):
@@ -32,7 +32,7 @@ class Joint:
 
     def step(self):
         err = self.position_setpoint - self.position
-        print(f"err: {err}")
+        print(f"id: {self.actuator_id}, err: {err}")
         if math.fabs(err) < MIN_DELTA:
             return []
 
@@ -114,7 +114,7 @@ class KBot:
     LeftShoulderPitchId = 21
     LeftShoulderRollId  = 22
     LeftShoulderYawId   = 23
-    LeftElbowPitchIdx   = 24
+    LeftElbowPitchId    = 24
     LeftHandYawId       = 25
     LeftHandGripId      = 26
 
@@ -129,7 +129,6 @@ class KBot:
                 zero_position=True,
             )
 
-    @staticmethod
     def engage():
         for id in KBot.ALL_VALID_IDS:
             kos.actuator.configure_actuator(
@@ -150,12 +149,12 @@ class KBot:
     @staticmethod
     def set_zero():
         JOINT_ARRAY[KBot.LeftShoulderPitchId].set_zero()
-        ret = JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
-        return ret
+        JOINT_ARRAY[KBot.LeftElbowPitchId].set_zero()
 
     @staticmethod
-    def set_target(setpoint):
-        JOINT_ARRAY[KBot.LeftShoulderPitchId].set_target(setpoint)
+    def set_target(id, setpoint):
+        # JOINT_ARRAY[KBot.LeftShoulderPitchId].set_target(setpoint)
+        JOINT_ARRAY[id].set_target(setpoint)
         # ret = JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
         # return ret
 
@@ -163,6 +162,7 @@ class KBot:
     def step():
         ret = []
         ret = ret + JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
+        ret = ret + JOINT_ARRAY[KBot.LeftElbowPitchId].step()
         return ret
 
     @staticmethod
@@ -323,12 +323,32 @@ def main(stdscr):
 # KBot.engage()
 # time.sleep(0.5)
 # KBot.set_target(5)
-KBot.set_zero()
+KBot.update()
+theta1_rad = JOINT_ARRAY[KBot.LeftElbowPitchId].position * math.pi / 180;
+
+R_mm = 30 * 10
+d_mm = -10 * 10
+
+i_rad = -theta1_rad + math.acos(math.cos(theta1_rad) - d_mm / R_mm)
+print(i_rad)
+
+t_shoulder = JOINT_ARRAY[KBot.LeftShoulderPitchId].position
+t_shoulder = t_shoulder + i_rad * 180 / math.pi
+t_elbow = (theta1_rad - i_rad) * 180 / math.pi
+
+print(t_shoulder)
+print(t_elbow)
+KBot.set_target(KBot.LeftShoulderPitchId, 0 + 20.76)
+KBot.set_target(KBot.LeftElbowPitchId, 90 + 25.76)
+# KBot.set_target(KBot.LeftShoulderPitchId, 0)
+# KBot.set_target(KBot.LeftElbowPitchId, 90)
 # 
-# 
-for _ in range(10):
+# # KBot.set_zero()
+# # # 
+# # # 
+for _ in range(100):
     KBot.update()
     cmds = KBot.step()
     print(cmds)
     KBot.send_commands(cmds)
-    time.sleep(0.2)
+    time.sleep(0.05)
