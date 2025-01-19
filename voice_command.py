@@ -67,6 +67,3 @@ def listen_and_process_command() -> tuple[str, str]:
         print(f"Could not request results; {e}")
     
     return None, None
-
-if __name__ == "__main__":
-    listen_and_process_command()
