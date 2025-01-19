@@ -8,7 +8,7 @@ import math
 MIN_DELTA = 0.55
 
 class Joint:
-    def __init__(self, actuator_id, zero_position=0.0):
+    def __init__(self, actuator_id, zero_position=0.0, offset=0.0, minus_delta=MIN_DELTA, plus_delta=MIN_DELTA):
         """
         Initialize a Joint with actuator ID and zero position.
         :param actuator_id: The ID of the actuator.
@@ -18,6 +18,9 @@ class Joint:
         self.zero_position = zero_position
         self.position_setpoint = zero_position
         self.position = zero_position
+        self.minus_delta = minus_delta
+        self.plus_delta = plus_delta
+        self.offset = offset
         # self.velocity = 0.0
         # self.torque = 0.0
 
@@ -25,7 +28,7 @@ class Joint:
         return f"Joint(actuator_id={self.actuator_id}, position={self.position:0.4f})"
 
     def set_target(self, setpoint):
-        self.position_setpoint = setpoint
+        self.position_setpoint = setpoint + self.offset
 
     def set_zero(self):
         self.position_setpoint = self.zero_position
@@ -33,12 +36,23 @@ class Joint:
     def step(self):
         err = self.position_setpoint - self.position
         print(f"id: {self.actuator_id}, err: {err}")
-        if math.fabs(err) < MIN_DELTA:
-            return []
+        # if math.fabs(err) < MIN_DELTA:
+        #     return []
 
+        if (math.fabs(err) < 0.001):
+            return []
         dir = err / math.fabs(err)
-        print(f"dir: {dir}")
-        cmd = self.position + dir * MIN_DELTA
+
+        if (dir > 0.0):
+            if math.fabs(err) < self.plus_delta:
+                return []
+            cmd = self.position + self.plus_delta
+        else:
+            if math.fabs(err) < self.minus_delta:
+                return []
+            cmd = self.position - self.minus_delta
+
+        # cmd = self.position + dir * MIN_DELTA
         print(f"pos: {self.position}, cmd: {cmd}")
         return [{
             'actuator_id'   : self.actuator_id,
@@ -59,12 +73,13 @@ JOINT_ARRAY = [
     Joint(actuator_id=8, zero_position=0.0),
     Joint(actuator_id=9, zero_position=0.0),
     Joint(actuator_id=10, zero_position=0.0),
-    Joint(actuator_id=11, zero_position=0.0),
+    Joint(actuator_id=11, zero_position=0.0, minus_delta=0.01, plus_delta=1),
+    # Joint(actuator_id=11, zero_position=0.0),
     Joint(actuator_id=12, zero_position=0.0),
     Joint(actuator_id=13, zero_position=0.0),
-    Joint(actuator_id=14, zero_position=0.0),
-    Joint(actuator_id=15, zero_position=0.0),
-    Joint(actuator_id=16, zero_position=0.0),
+    Joint(actuator_id=14, zero_position=0.563, minus_delta=0.01, plus_delta=1),
+    Joint(actuator_id=15, zero_position=0.0, offset=3),
+    Joint(actuator_id=16, zero_position=0.0, minus_delta=2, plus_delta=2),
     Joint(actuator_id=17, zero_position=0.0),
     Joint(actuator_id=18, zero_position=0.0),
     Joint(actuator_id=19, zero_position=0.0),
@@ -72,7 +87,7 @@ JOINT_ARRAY = [
     Joint(actuator_id=21, zero_position=0.0),
     Joint(actuator_id=22, zero_position=-2.6038),
     Joint(actuator_id=23, zero_position=0.0),
-    Joint(actuator_id=24, zero_position=-3.6091),
+    Joint(actuator_id=24, zero_position=-3.6091, minus_delta=0.2, plus_delta=1),
     Joint(actuator_id=25, zero_position=0.0),
     Joint(actuator_id=26, zero_position=0.0),
     Joint(actuator_id=27, zero_position=0.0),
@@ -105,18 +120,25 @@ JOINT_ARRAY = [
 
 class KBot:
     ALL_VALID_IDS = [
-        # *range(11, 16), # TODO: make it work with (11, 17)
+        *range(11, 17), # TODO: make it work with (11, 17)
         *range(21, 26), # TODO: make it work with (21, 27)
         # *range(31, 36),
         # *range(41, 46),
     ]
 
-    LeftShoulderPitchId = 21
-    LeftShoulderRollId  = 22
-    LeftShoulderYawId   = 23
-    LeftElbowPitchId    = 24
-    LeftHandYawId       = 25
-    LeftHandGripId      = 26
+    RightShoulderPitchId = 21
+    RightShoulderRollId  = 22
+    RightShoulderYawId   = 23
+    RightElbowPitchId    = 24
+    RightHandYawId       = 25
+    RightHandGripId      = 26
+
+    LeftShoulderPitchId = 11
+    LeftShoulderRollId  = 12
+    LeftShoulderYawId   = 13
+    LeftElbowPitchId    = 14
+    LeftHandYawId       = 15
+    LeftHandGripId      = 16
 
     @staticmethod
     def stop():
@@ -144,25 +166,33 @@ class KBot:
         states = kos.actuator.get_actuators_state(KBot.ALL_VALID_IDS)
         for state in states.states:
             JOINT_ARRAY[state.actuator_id].position = state.position
-            # print(JOINT_ARRAY[state.actuator_id])
+            print(JOINT_ARRAY[state.actuator_id])
 
     @staticmethod
     def set_zero():
-        JOINT_ARRAY[KBot.LeftShoulderPitchId].set_zero()
-        JOINT_ARRAY[KBot.LeftElbowPitchId].set_zero()
+        for id in KBot.ALL_VALID_IDS:
+            JOINT_ARRAY[id].set_zero()
 
     @staticmethod
     def set_target(id, setpoint):
-        # JOINT_ARRAY[KBot.LeftShoulderPitchId].set_target(setpoint)
+        # JOINT_ARRAY[KBot.RightShoulderPitchId].set_target(setpoint)
         JOINT_ARRAY[id].set_target(setpoint)
-        # ret = JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
+        # ret = JOINT_ARRAY[KBot.RightShoulderPitchId].step()
         # return ret
 
     @staticmethod
     def step():
         ret = []
-        ret = ret + JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
-        ret = ret + JOINT_ARRAY[KBot.LeftElbowPitchId].step()
+        for id in KBot.ALL_VALID_IDS:
+            ret = ret + JOINT_ARRAY[id].step()
+        # ret = ret + JOINT_ARRAY[KBot.RightShoulderPitchId].step()
+        # ret = ret + JOINT_ARRAY[KBot.RightElbowPitchId].step()
+        # ret = ret + JOINT_ARRAY[KBot.RightHandYawId].step()
+        # ret = ret + JOINT_ARRAY[KBot.RightHandYawId].step()
+
+        # ret = ret + JOINT_ARRAY[KBot.LeftShoulderPitchId].step()
+        # ret = ret + JOINT_ARRAY[KBot.LeftElbowPitchId].step()
+        # ret = ret + JOINT_ARRAY[KBot.LeftHandYawId].step()
         return ret
 
     @staticmethod
@@ -186,12 +216,12 @@ class KBot:
 
     # @staticmethod
 
-    #     LeftShoulderPitch = Joint(actuator_id=21, 3.7244)
-    #     LeftShoulderRoll = Joint(actuator_id=22, -2.6038)
-    #     LeftShoulderYaw = Joint(actuator_id=23)
-    #     LeftElbowPitch = Joint(actuator_id=24, -3.6091)
-    #     LeftHandYaw = Joint(actuator_id=25)
-    #     LeftHandGrip = Joint(actuator_id=26)
+    #     RightShoulderPitch = Joint(actuator_id=21, 3.7244)
+    #     RightShoulderRoll = Joint(actuator_id=22, -2.6038)
+    #     RightShoulderYaw = Joint(actuator_id=23)
+    #     RightElbowPitch = Joint(actuator_id=24, -3.6091)
+    #     RightHandYaw = Joint(actuator_id=25)
+    #     RightHandGrip = Joint(actuator_id=26)
 
 
         
@@ -202,12 +232,12 @@ class KBot:
 
 
 
-# LeftShoulderPitch = Joint(actuator_id=21, 3.7244)
-# LeftShoulderRoll = Joint(actuator_id=22, -2.6038)
-# LeftShoulderYaw = Joint(actuator_id=23)
-# LeftElbowPitch = Joint(actuator_id=24, -3.6091)
-# LeftHandYaw = Joint(actuator_id=25)
-# LeftHandGrip = Joint(actuator_id=26)
+# RightShoulderPitch = Joint(actuator_id=21, 3.7244)
+# RightShoulderRoll = Joint(actuator_id=22, -2.6038)
+# RightShoulderYaw = Joint(actuator_id=23)
+# RightElbowPitch = Joint(actuator_id=24, -3.6091)
+# RightHandYaw = Joint(actuator_id=25)
+# RightHandGrip = Joint(actuator_id=26)
 
 
 # Configure logging
@@ -216,7 +246,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(message)s"
 )
-ROBOT_IP = "10.33.11.199"
+# ROBOT_IP = "10.33.11.199"
+ROBOT_IP = "172.20.10.6"
 kos = pykos.KOS(ip=ROBOT_IP)
 
     
@@ -299,7 +330,7 @@ def main(stdscr):
             send_commands()
 
         elif key == curses.KEY_LEFT:
-            logging.info("Left arrow pressed")
+            logging.info("Right arrow pressed")
             move_joint("left_shoulder_lateral", 1)
             send_commands()
 
@@ -318,35 +349,49 @@ def main(stdscr):
 # Run the curses application
 # curses.wrapper(main)
 
+GRIP_OPEN=120
+GRIP_CLOSE=100
+# KBot.stop()
+# time.sleep(1)
 # KBot.stop()
 # time.sleep(1)
 # KBot.engage()
 # time.sleep(0.5)
 # KBot.set_target(5)
 KBot.update()
-theta1_rad = JOINT_ARRAY[KBot.LeftElbowPitchId].position * math.pi / 180;
-
-R_mm = 30 * 10
-d_mm = -10 * 10
-
-i_rad = -theta1_rad + math.acos(math.cos(theta1_rad) - d_mm / R_mm)
-print(i_rad)
-
-t_shoulder = JOINT_ARRAY[KBot.LeftShoulderPitchId].position
-t_shoulder = t_shoulder + i_rad * 180 / math.pi
-t_elbow = (theta1_rad - i_rad) * 180 / math.pi
-
-print(t_shoulder)
-print(t_elbow)
-KBot.set_target(KBot.LeftShoulderPitchId, 0 + 20.76)
-KBot.set_target(KBot.LeftElbowPitchId, 90 + 25.76)
-# KBot.set_target(KBot.LeftShoulderPitchId, 0)
-# KBot.set_target(KBot.LeftElbowPitchId, 90)
+# # theta1_rad = JOINT_ARRAY[KBot.RightElbowPitchId].position * math.pi / 180;
+# # 
+# # R_mm = 30 * 10
+# # d_mm = -10 * 10
+# # 
+# # i_rad = -theta1_rad + math.acos(math.cos(theta1_rad) - d_mm / R_mm)
+# # print(i_rad)
+# # 
+# # t_shoulder = JOINT_ARRAY[KBot.RightShoulderPitchId].position
+# # t_shoulder = t_shoulder + i_rad * 180 / math.pi
+# # t_elbow = (theta1_rad - i_rad) * 180 / math.pi
 # 
-# # KBot.set_zero()
-# # # 
-# # # 
-for _ in range(100):
+# # print(t_shoulder)
+# # print(t_elbow)
+# # KBot.set_target(KBot.RightShoulderPitchId, 0 + 20.76)
+# # KBot.set_target(KBot.RightElbowPitchId, 90 + 25.76)
+# KBot.set_target(KBot.RightShoulderPitchId, 0)
+# KBot.set_target(KBot.RightElbowPitchId, 90)
+# KBot.set_target(KBot.RightHandYawId, 0)
+# KBot.set_zero()
+# 
+# KBot.set_target(KBot.LeftShoulderYawId, 0)
+# KBot.set_target(KBot.LeftShoulderPitchId, 0 - 30)
+# KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
+# KBot.set_target(KBot.LeftShoulderPitchId, -30)
+# KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
+
+KBot.set_target(KBot.LeftShoulderPitchId, 0)
+KBot.set_target(KBot.LeftElbowPitchId, 90 + 0)
+KBot.set_target(KBot.LeftHandYawId, 90)
+KBot.set_target(KBot.LeftHandGripId, 95)
+
+for _ in range(500):
     KBot.update()
     cmds = KBot.step()
     print(cmds)
