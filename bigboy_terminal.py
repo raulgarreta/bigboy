@@ -6,6 +6,7 @@ import logging
 import math
 
 MIN_DELTA = 0.55
+ERR_THRES = 2
 
 class Joint:
     def __init__(self, actuator_id, zero_position=0.0, offset=0.0, minus_delta=MIN_DELTA, plus_delta=MIN_DELTA):
@@ -44,11 +45,11 @@ class Joint:
         dir = err / math.fabs(err)
 
         if (dir > 0.0):
-            if math.fabs(err) < self.plus_delta:
+            if math.fabs(err) < ERR_THRES:
                 return []
             cmd = self.position + self.plus_delta
         else:
-            if math.fabs(err) < self.minus_delta:
+            if math.fabs(err) < ERR_THRES:
                 return []
             cmd = self.position - self.minus_delta
 
@@ -121,7 +122,7 @@ JOINT_ARRAY = [
 class KBot:
     ALL_VALID_IDS = [
         *range(11, 17), # TODO: make it work with (11, 17)
-        *range(21, 26), # TODO: make it work with (21, 27)
+        # *range(21, 26), # TODO: make it work with (21, 27)
         # *range(31, 36),
         # *range(41, 46),
     ]
@@ -246,8 +247,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(message)s"
 )
-# ROBOT_IP = "10.33.11.199"
-ROBOT_IP = "172.20.10.6"
+ROBOT_IP = "10.33.11.199"
+# ROBOT_IP = "172.20.10.6"
 kos = pykos.KOS(ip=ROBOT_IP)
 
     
@@ -349,16 +350,48 @@ def main(stdscr):
 # Run the curses application
 # curses.wrapper(main)
 
+def wait_cmds(duration_s=5):
+    
+    # Record the start time
+    start_time = time.perf_counter()
+    while (time.perf_counter() - start_time) < duration_s:
+        KBot.update()
+        cmds = KBot.step()
+        print(cmds)
+        KBot.send_commands(cmds)
+        time.sleep(0.02)  # Maintain the desired update rate
+
 GRIP_OPEN=130
-GRIP_CLOSE=90
+GRIP_CLOSE=80
+
+def unwind():
+    KBot.set_target(KBot.LeftShoulderPitchId, -30)
+    KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
+    KBot.set_target(KBot.LeftHandYawId, 0)
+
+def wind():
+    KBot.set_target(KBot.LeftShoulderPitchId, 0)
+    KBot.set_target(KBot.LeftElbowPitchId, 90)
+    KBot.set_target(KBot.LeftHandYawId, 0)
+
+def grip_open():
+    wind()
+    KBot.set_target(KBot.LeftHandGripId, GRIP_OPEN)
+
+def grip_close():
+    wind()
+    KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
+
+
+
 # KBot.stop()
 # time.sleep(1)
 # KBot.stop()
 # time.sleep(1)
 # KBot.engage()
-# time.sleep(0.5)
-# KBot.set_target(5)
-KBot.update()
+# # time.sleep(0.5)
+# # KBot.set_target(5)
+# KBot.update()
 # # theta1_rad = JOINT_ARRAY[KBot.RightElbowPitchId].position * math.pi / 180;
 # # 
 # # R_mm = 30 * 10
@@ -396,15 +429,23 @@ KBot.update()
 # KBot.set_target(KBot.LeftHandYawId, 90)
 # KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
 # 
-KBot.set_target(KBot.LeftShoulderPitchId, -30)
-KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
-KBot.set_target(KBot.LeftHandYawId, 90)
-KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
+# KBot.set_target(KBot.LeftShoulderPitchId, -30)
+# KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
+# KBot.set_target(KBot.LeftHandYawId, 90)
+# KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
+# KBot.set_zero()
+wind()
+wait_cmds(10)
+ 
+grip_open()
+wait_cmds(5)
 
 
-for _ in range(500):
-    KBot.update()
-    cmds = KBot.step()
-    print(cmds)
-    KBot.send_commands(cmds)
-    time.sleep(0.05)
+grip_close()
+wait_cmds(5)
+
+unwind()
+wait_cmds(10)
+# 
+# for _ in range(500):
+#     KBot.update()
