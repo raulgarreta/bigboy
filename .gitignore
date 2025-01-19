@@ -20,5 +20,9 @@ dist/
 *.so
 out*/
 
+
+# logs
+*.log
+
 #venv
 venv/
