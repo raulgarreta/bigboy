@@ -20,8 +20,9 @@ dist/
 *.so
 out*/
 
+
 # logs
 *.log
 
-# Virtual env
-venv
+#venv
+venv/
