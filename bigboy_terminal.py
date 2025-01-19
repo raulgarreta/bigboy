@@ -73,13 +73,13 @@ JOINT_ARRAY = [
     Joint(actuator_id=8, zero_position=0.0),
     Joint(actuator_id=9, zero_position=0.0),
     Joint(actuator_id=10, zero_position=0.0),
-    Joint(actuator_id=11, zero_position=0.0, minus_delta=0.01, plus_delta=1),
+    Joint(actuator_id=11, zero_position=0.0, minus_delta=0.01, plus_delta=0.8),
     # Joint(actuator_id=11, zero_position=0.0),
     Joint(actuator_id=12, zero_position=0.0),
     Joint(actuator_id=13, zero_position=0.0),
-    Joint(actuator_id=14, zero_position=0.563, minus_delta=0.01, plus_delta=1),
+    Joint(actuator_id=14, zero_position=0.563, minus_delta=0.01, plus_delta=0.8),
     Joint(actuator_id=15, zero_position=0.0, offset=3),
-    Joint(actuator_id=16, zero_position=0.0, minus_delta=2, plus_delta=2),
+    Joint(actuator_id=16, zero_position=0.0, minus_delta=5, plus_delta=5),
     Joint(actuator_id=17, zero_position=0.0),
     Joint(actuator_id=18, zero_position=0.0),
     Joint(actuator_id=19, zero_position=0.0),
@@ -349,8 +349,8 @@ def main(stdscr):
 # Run the curses application
 # curses.wrapper(main)
 
-GRIP_OPEN=120
-GRIP_CLOSE=100
+GRIP_OPEN=130
+GRIP_CLOSE=90
 # KBot.stop()
 # time.sleep(1)
 # KBot.stop()
@@ -386,10 +386,21 @@ KBot.update()
 # KBot.set_target(KBot.LeftShoulderPitchId, -30)
 # KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
 
-KBot.set_target(KBot.LeftShoulderPitchId, 0)
-KBot.set_target(KBot.LeftElbowPitchId, 90 + 0)
+# KBot.set_target(KBot.LeftShoulderPitchId, 0)
+# KBot.set_target(KBot.LeftElbowPitchId, 90 + 0)
+# KBot.set_target(KBot.LeftHandYawId, 90)
+# KBot.set_target(KBot.LeftHandGripId, GRIP_OPEN)
+
+# KBot.set_target(KBot.LeftShoulderPitchId, 0)
+# KBot.set_target(KBot.LeftElbowPitchId, 90 + 0)
+# KBot.set_target(KBot.LeftHandYawId, 90)
+# KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
+# 
+KBot.set_target(KBot.LeftShoulderPitchId, -30)
+KBot.set_target(KBot.LeftElbowPitchId, 90 + 30)
 KBot.set_target(KBot.LeftHandYawId, 90)
-KBot.set_target(KBot.LeftHandGripId, 95)
+KBot.set_target(KBot.LeftHandGripId, GRIP_CLOSE)
+
 
 for _ in range(500):
     KBot.update()
