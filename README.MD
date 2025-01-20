@@ -7,16 +7,6 @@ K-BOT Hackathon code to move an arm
 
 PoseBot uses computer vision to detect and track human poses in real-time, then translates these movements into robot joint commands. This creates an interactive experience where the robot mirrors human movements as they happen.
 
-## Usage
-
-```bash
-python bigboy.py
-```
-You will need python 3.11 to run this code (last version of kos needs that).
-
-Make sure you change the ROBOT_IP with the IP of the raspberry pi that is running the
-kos server.
-You should be able to move the robot arm by pressing the arrow keys.
 
 ## Features
 
@@ -25,22 +15,28 @@ You should be able to move the robot arm by pressing the arrow keys.
 - Built with Rust for high performance and reliability
 - Generic `humanoid` interface supports different robotics platforms
 
-## Requirements (Fix issues.)
+## Requirements 
 
 - Rust (latest stable version)
-- Compatible robot hardware (servo motors, actuators)
-- USB camera or webcam
-- Linux/macOS/Windows operating system
+- Python 3.11
+- Raspberry Pi 5
 
 
 ## Installation
-1. Clone the repository:
+
+Clone the repository.
 
 ```bash
-git clone https://github.com/rgarreta/bigboy.git
+git clone https://github.com/raulgarreta/bigboy.git
 cd bigboy
 ```
-Create a virtual environment.
+
+Create and activate a virtual environment.
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
 
 Install all the requirements:
 
@@ -48,12 +44,13 @@ Install all the requirements:
 pip install -r requirements.txt
 ```
 
+Make sure you change the `ROBOT_IP` in `bigboy.py` with the IP of the raspberry pi that is running the
+kos server.
+
 ## Usage
 
-1. Connect your camera and robot hardware
-2. Setup `.env` with the correct IP for the server
-3. Run the bigboy service:
-
+1. Follow the instructions [here](https://sponge-sled-8df.notion.site/Setting-up-K-Bot-17f9bcb033d880509bcbfaff1db4fc33) to setup the kos server on the raspberry pi.
+2. Run the kos server on the raspberry pi.
 ```bash
 cargo run
 ```
@@ -63,7 +60,7 @@ cargo run
 
 ## Safety
 
-- The robot has conservative angle movements to prevent clashing with itself or stumbling.
+- The robot has conservative angle movements to prevent clashing with itself or stumbling. You may have to override them when inside pykos library when testing. 
 - Please keep a few steps away from the robot during operation.
 
 ## Architecture  *** Section needs updating ***
@@ -82,4 +79,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- We are grateful for the contributions of Ben, Dennis, and many more for their frequent advice, without which we would not have solved certain issues. Thanks to [K-Scale](https://github.com/kscalelabs) and their staff for their graciousness!
+- We are grateful for the contributions of Ben, Dennis, JX and many more for their frequent advice, without which we would not have solved certain issues. Thanks to [K-Scale](https://github.com/kscalelabs) and their staff for their graciousness!
