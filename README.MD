@@ -75,13 +75,6 @@ cargo run
 - The robot has conservative angle movements to prevent clashing with itself or stumbling. You may have to override them when inside pykos library when testing. 
 - Please keep a few steps away from the robot during operation.
 
-## Architecture  *** Section needs updating ***
-
-- `pose_mappings` crate runs pose estimation, and sends POST requests with data to the server.
-- `humanoid` crate contains the generic humanoid robot interface and related types.
-- `zeroth` crate includes the RPC client for the Zeroth robot.
-- `bot` contains the controller server implementation.
-
 Use format 
 - 'function or variable' explanation
 
