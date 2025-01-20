@@ -1,19 +1,31 @@
-# BigBoy_Waiter
+# BigBoy
 
-Real-time human pose mirroring for the Kbot. PoseBot captures human poses through a camera and replicates the movements on a physical robot.
-K-BOT Hackathon code to move an arm
+Arm movement to hold a beer for K-bot, using [K-Scale OS](https://github.com/kscalelabs/kos/).
 
 ## Overview
 
-PoseBot uses computer vision to detect and track human poses in real-time, then translates these movements into robot joint commands. This creates an interactive experience where the robot mirrors human movements as they happen.
+**Goal:** 
+Use the K-Bot to hold my beer
+
+**Software Implementation:**
+- Simple controller: Set actuation goal, slowly inch towards it
+- Keep the forearm level at all times (Math!)
+- KBot class for communication and collecting commands for all actuators
+- Send commands using K-ROS and pykos
+
+**Hardware Components:**
+- K-Bot robot
+- Raspberry Pi
 
 
 ## Features
 
-- Real-time human pose detection using computer vision
-- Smooth translation of human movements to robot joint positions
-- Built with Rust for high performance and reliability
-- Generic `humanoid` interface supports different robotics platforms
+- kOS server running on Raspberry Pi
+- Python client code using kOS SDK.
+- Arm movement to hold a beer, controls the left arm joints and gripper.
+- Moving the robot arm and other joints using keyboard.
+- Recording / Re-playing of skills.
+
 
 ## Requirements 
 
