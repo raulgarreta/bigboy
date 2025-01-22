@@ -1,6 +1,6 @@
 # BigBoy Waiter
 
-Arm movement to hold a beer for K-bot, using [K-Scale OS](https://github.com/kscalelabs/kos/).
+Arm movement to hold a drink for K-bot, using [K-Scale OS](https://github.com/kscalelabs/kos/).
 
 ## Overview
 
